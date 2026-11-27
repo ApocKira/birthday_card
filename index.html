@@ -139,10 +139,6 @@
                 <div id="bear-speech" class="inline-block bg-pink-50 text-pink-600 font-bold text-sm px-5 py-2 rounded-2xl border border-pink-200 transition-all duration-300">
                     💬 点击一二或布布，听听它们对你说什么~
                 </div>
-                <label class="text-xs text-stone-400 hover:text-pink-500 cursor-pointer underline transition">
-                    🖼️ 预览没出图？点这里手动导入你的原图
-                    <input type="file" accept="image/*" class="hidden" onchange="loadUserImage(event)" />
-                </label>
             </div>
         </section>
 
@@ -280,12 +276,12 @@
             </div>
 
             <div id="letter-opened" class="hidden bg-amber-50/70 border border-amber-200 rounded-2xl p-6 sm:p-8 text-stone-700 leading-relaxed space-y-4 relative">
-                <p class="font-bold text-lg text-rose-600">亲爱的老婆：</p>
+                <p class="font-bold text-lg text-rose-600">亲爱的猪猪：</p>
                 <p>
                     生日快乐呀！就像粘在一起的一二和布布一样，不知不觉我们已经一起走过了这么多快乐又温暖的日子。
                 </p>
                 <p>
-                    感谢你一直以来的温柔、包容和可爱，把我们的小家变得像蜜糖一样甜。希望新的一岁里，你依然可以像一二一样无忧无虑、吃饱饱睡香香，而我会像布布一样，永远做你最坚实的依靠，陪你吃遍所有美食，去想去的地方！
+                    感谢你一直以来的温柔、包容和可爱，努力经营着我们的小家。希望新的一岁里，你依然可以像一二一样无忧无虑、吃饱饱睡香香，而我会像布布一样，永远做你最坚实的依靠，陪你吃遍所有美食，去想去的地方！
                 </p>
                 <p>
                     今天你最大，所有的愿望都要实现，所有的烦恼统统退散！
@@ -294,64 +290,6 @@
                     <span class="text-xs text-stone-400">2026年 · 专属定制</span>
                     <div class="text-right">
                         <p class="font-bold text-rose-500">永远爱你的老公 🐻🐼</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. 一二布布宠妻特权兑换券 (点击翻转) -->
-        <section class="w-full">
-            <div class="text-center mb-5">
-                <h2 class="cute-font text-2xl sm:text-3xl text-pink-600">🎟️ 生日专属宠妻兑换券</h2>
-                <p class="text-stone-500 text-sm">点击卡片翻开查看你的生日特权，随时找老公兑换！</p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <!-- 卡片 1 -->
-                <div class="perspective h-44 cursor-pointer" onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')">
-                    <div class="preserve-3d relative w-full h-full">
-                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-pink-400 to-rose-400 rounded-2xl p-5 flex flex-col items-center justify-center text-white shadow-md border-2 border-white">
-                            <span class="text-4xl mb-2">🐼</span>
-                            <span class="font-extrabold text-lg">一二特权券 #1</span>
-                            <span class="text-xs opacity-90 mt-1">点击翻开查看</span>
-                        </div>
-                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-md border-2 border-pink-300">
-                            <span class="text-3xl mb-1">🍲</span>
-                            <h3 class="font-extrabold text-pink-600 text-base">豪华大餐任选券</h3>
-                            <p class="text-xs text-stone-500 mt-1">火锅、日料、烧烤随你挑，老公全额买单不眨眼！</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 卡片 2 -->
-                <div class="perspective h-44 cursor-pointer" onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')">
-                    <div class="preserve-3d relative w-full h-full">
-                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl p-5 flex flex-col items-center justify-center text-white shadow-md border-2 border-white">
-                            <span class="text-4xl mb-2">🐻</span>
-                            <span class="font-extrabold text-lg">布布特权券 #2</span>
-                            <span class="text-xs opacity-90 mt-1">点击翻开查看</span>
-                        </div>
-                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-md border-2 border-amber-300">
-                            <span class="text-3xl mb-1">💆‍♀️</span>
-                            <h3 class="font-extrabold text-amber-600 text-base">全套肩颈按摩券</h3>
-                            <p class="text-xs text-stone-500 mt-1">专属布布按摩师上线，包你舒舒服服睡个好觉~</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 卡片 3 -->
-                <div class="perspective h-44 cursor-pointer" onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')">
-                    <div class="preserve-3d relative w-full h-full">
-                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl p-5 flex flex-col items-center justify-center text-white shadow-md border-2 border-white">
-                            <span class="text-4xl mb-2">🎁</span>
-                            <span class="font-extrabold text-lg">双熊终极券 #3</span>
-                            <span class="text-xs opacity-90 mt-1">点击翻开查看</span>
-                        </div>
-                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-md border-2 border-purple-300">
-                            <span class="text-3xl mb-1">🛍️</span>
-                            <h3 class="font-extrabold text-purple-600 text-base">购物车清空助力券</h3>
-                            <p class="text-xs text-stone-500 mt-1">挑选一件心仪已久的生日礼物，立刻安排下单！</p>
-                        </div>
                     </div>
                 </div>
             </div>
