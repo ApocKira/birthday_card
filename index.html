@@ -177,13 +177,23 @@
             <p class="text-stone-500 text-xs sm:text-sm mb-5">疯狂连点下方的大爱心，把老公的爱意值灌满 100% 吧！</p>
 
             <!-- 互动大爱心按钮 -->
-            <div class="relative my-2">
-                <img src="heart1.gif" onerror="this.style.display='none'" alt="比心左" class="w-20 sm:w-28 h-auto rounded-xl mix-blend-multiply pointer-events-none" />
-                <button id="love-heart-btn" onclick="chargeLove(event)" class="text-7xl sm:text-8xl transition-transform duration-100 active:scale-75 hover:scale-110 select-none cursor-pointer drop-shadow-md focus:outline-none">
-                    ❤️
-                </button>
-                <img src="heart2.gif" onerror="this.style.display='none'" alt="比心右" class="w-20 sm:w-28 h-auto rounded-xl mix-blend-multiply pointer-events-none" />
-            </div>
+            <div class="relative my-2 flex items-center justify-center gap-2">
+    <img src="heart1.gif"
+         onerror="this.style.display='none'"
+         alt="比心左"
+         class="w-20 sm:w-28 h-auto rounded-xl mix-blend-multiply pointer-events-none" />
+
+    <button id="love-heart-btn"
+            onclick="chargeLove(event)"
+            class="text-7xl sm:text-8xl transition-transform duration-100 active:scale-75 hover:scale-110 select-none cursor-pointer drop-shadow-md focus:outline-none">
+        ❤️
+    </button>
+
+    <img src="heart2.gif"
+         onerror="this.style.display='none'"
+         alt="比心右"
+         class="w-20 sm:w-28 h-auto rounded-xl mix-blend-multiply pointer-events-none" />
+</div>
 
             <!-- 进度条容器 -->
             <div class="w-full max-w-md mt-4">
