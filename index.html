@@ -32,14 +32,19 @@
         .animate-float-reverse {
             animation: floatReverse 4s ease-in-out infinite;
         }
-        /* 蜡烛火焰跳动 */
-        @keyframes flicker {
-            0%, 100% { transform: scale(1) rotate(-2deg); opacity: 1; }
-            50% { transform: scale(1.15) rotate(2deg); opacity: 0.9; }
+        /* 拍立得照片墙无限横向滚动 */
+        @keyframes marqueeScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
-        .flame {
-            animation: flicker 0.6s infinite alternate;
-            transform-origin: bottom center;
+        .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marqueeScroll 22s linear infinite;
+        }
+        .marquee-wrapper:hover .animate-marquee,
+        .marquee-wrapper:active .animate-marquee {
+            animation-play-state: paused;
         }
         /* 爱心心跳 */
         @keyframes heartbeat {
@@ -112,16 +117,6 @@
                          onerror="document.getElementById('upload-hint').classList.remove('hidden')"
                          alt="一二布布" 
                          class="w-full h-auto block mix-blend-multiply" />
-
-                    <!-- 如果在在线预览环境找不到本地路径时显示的友好提示按钮 -->
-                    <div id="upload-hint" class="hidden bg-pink-50/95 border-2 border-dashed border-pink-300 rounded-2xl p-6 text-center">
-                        <p class="text-sm font-bold text-pink-600 mb-2">📸 预览环境暂未读取到本地照片</p>
-                        <p class="text-xs text-stone-500 mb-3">点击下方按钮直接选择你相册里的那张图即可显示（如果把网页和图片放同一文件夹打开也会自动显示）</p>
-                        <label class="inline-block bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-2 px-4 rounded-full cursor-pointer shadow transition active:scale-95">
-                            选择我的图片
-                            <input type="file" accept="image/*" class="hidden" onchange="loadUserImage(event)" />
-                        </label>
-                    </div>
                     
                     <!-- 隐形左右点击热区 -->
                     <div id="click-zones" class="absolute inset-0 flex">
@@ -151,63 +146,127 @@
             </div>
         </section>
 
-        <!-- 2. 互动许愿生日蛋糕 -->
-        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-100 flex flex-col items-center text-center">
-            <h2 class="cute-font text-2xl sm:text-3xl text-amber-600 mb-2">🎂 闭上眼睛，许个愿吧</h2>
-            <p id="cake-instruction" class="text-stone-500 text-sm mb-6">点击下方按钮或直接点击蜡烛火焰吹灭蜡烛！</p>
-
-            <!-- 蛋糕 SVG -->
-            <div class="relative w-64 h-60 flex justify-center items-center cursor-pointer" onclick="blowCandles()">
-                <svg viewBox="0 0 240 220" class="w-full h-full drop-shadow-md">
-                    <!-- 盘子 -->
-                    <ellipse cx="120" cy="195" rx="105" ry="16" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="3"/>
-                    <!-- 蛋糕底层 -->
-                    <rect x="40" y="135" width="160" height="55" rx="12" fill="#FBCFE8" stroke="#5C4033" stroke-width="4"/>
-                    <!-- 底层奶油波浪 -->
-                    <path d="M 40 150 Q 60 165 80 150 T 120 150 T 160 150 T 200 150 L 200 135 L 40 135 Z" fill="#FFF" stroke="#5C4033" stroke-width="3"/>
-                    <!-- 蛋糕顶层 -->
-                    <rect x="65" y="90" width="110" height="45" rx="10" fill="#FDE68A" stroke="#5C4033" stroke-width="4"/>
-                    <!-- 顶层草莓酱波浪 -->
-                    <path d="M 65 103 Q 83 115 101 103 T 138 103 T 175 103 L 175 90 L 65 90 Z" fill="#FB7185" stroke="#5C4033" stroke-width="3"/>
-                    
-                    <!-- 装饰小草莓 -->
-                    <circle cx="85" cy="86" r="7" fill="#E11D48" stroke="#5C4033" stroke-width="2.5"/>
-                    <circle cx="155" cy="86" r="7" fill="#E11D48" stroke="#5C4033" stroke-width="2.5"/>
-
-                    <!-- 蜡烛 1 -->
-                    <rect x="96" y="55" width="10" height="35" rx="3" fill="#93C5FD" stroke="#5C4033" stroke-width="3"/>
-                    <!-- 蜡烛 2 (中间) -->
-                    <rect x="115" y="48" width="10" height="42" rx="3" fill="#F9A8D4" stroke="#5C4033" stroke-width="3"/>
-                    <!-- 蜡烛 3 -->
-                    <rect x="134" y="55" width="10" height="35" rx="3" fill="#A7F3D0" stroke="#5C4033" stroke-width="3"/>
-
-                    <!-- 火焰组 -->
-                    <g id="candle-flames">
-                        <path class="flame" d="M 101 52 C 95 42, 101 32, 101 32 C 101 32, 107 42, 101 52 Z" fill="#F59E0B" stroke="#EA580C" stroke-width="1.5"/>
-                        <path class="flame" d="M 120 45 C 113 33, 120 22, 120 22 C 120 22, 127 33, 120 45 Z" fill="#F59E0B" stroke="#EA580C" stroke-width="1.5"/>
-                        <path class="flame" d="M 139 52 C 133 42, 139 32, 139 32 C 139 32, 145 42, 139 52 Z" fill="#F59E0B" stroke="#EA580C" stroke-width="1.5"/>
-                    </g>
-
-                    <!-- 吹灭后的青烟 (默认隐藏) -->
-                    <g id="candle-smoke" class="hidden opacity-70">
-                        <path d="M 101 50 Q 95 40 103 30" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M 120 43 Q 126 33 118 22" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M 139 50 Q 133 40 141 30" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/>
-                    </g>
-                </svg>
+        <!-- 2. 一二布布甜蜜拍立得滚动回忆墙 -->
+        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl py-6 sm:py-8 shadow-xl border-2 border-amber-100 flex flex-col items-center text-center overflow-hidden">
+            <div class="px-6 mb-4 flex flex-col items-center">
+                <div class="inline-flex items-center space-x-2 bg-pink-100 text-pink-600 text-xs font-extrabold px-3 py-1 rounded-full mb-2">
+                    <span>📸 POLAROID MEMORIES</span>
+                </div>
+                <h2 class="cute-font text-2xl sm:text-3xl text-amber-600 mb-1">✨ 我们的甜蜜拍立得时光机</h2>
+                <p class="text-stone-500 text-xs sm:text-sm">悬停或按住可暂停欣赏，点击任意照片查看专属纪念故事~</p>
             </div>
 
-            <div class="flex space-x-3 mt-2">
-                <button id="blow-btn" onclick="blowCandles()" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-extrabold py-2.5 px-6 rounded-full shadow-md transition active:scale-95">
-                    🌬️ 吹灭蜡烛许愿
-                </button>
-                <button id="relight-btn" onclick="relightCandles()" class="hidden bg-pink-100 hover:bg-pink-200 text-pink-600 font-bold py-2.5 px-5 rounded-full transition active:scale-95">
-                    🔥 重新点燃
+            <!-- 横向无缝滚动容器 -->
+            <div class="marquee-wrapper w-full overflow-hidden py-4 cursor-pointer relative">
+                <!-- 左右边缘柔和渐隐遮罩 -->
+                <div class="pointer-events-none absolute inset-y-0 left-0 w-8 sm:w-14 bg-gradient-to-r from-white/90 to-transparent z-10"></div>
+                <div class="pointer-events-none absolute inset-y-0 right-0 w-8 sm:w-14 bg-gradient-to-l from-white/90 to-transparent z-10"></div>
+
+                <div id="polaroid-track" class="animate-marquee flex space-x-5 px-4">
+                    <!-- 拍立得卡片将由 JS 动态渲染两份以实现无缝循环 -->
+                </div>
+            </div>
+
+            <!-- 底部操作栏：批量导入合照 & 拍照彩蛋 -->
+            <div class="px-6 mt-3 flex flex-wrap justify-center gap-3">
+                <button onclick="takeSnapshot()" class="bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2 px-5 rounded-full shadow-md transition active:scale-95 text-sm flex items-center space-x-1">
+                    <span>📷</span>
+                    <span>咔嚓！定格此刻幸福</span>
                 </button>
             </div>
         </section>
 
-        <!-- 3. 一二布布的专属情书信封 -->
+        <!-- 3. 给小猪猪疯狂比心充电站 -->
+        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-pink-200 flex flex-col items-center text-center relative overflow-hidden">
+            <div class="inline-flex items-center space-x-2 bg-rose-100 text-rose-600 text-xs font-extrabold px-3 py-1 rounded-full mb-2">
+                <span>💖 LOVE POWER CHARGER</span>
+            </div>
+            <h2 class="cute-font text-2xl sm:text-3xl text-rose-500 mb-1">⚡ 给小猪猪疯狂比心充电</h2>
+            <p class="text-stone-500 text-xs sm:text-sm mb-5">疯狂连点下方的大爱心，把老公的爱意值灌满 100% 吧！</p>
+
+            <!-- 互动大爱心按钮 -->
+            <div class="relative my-2">
+                <button id="love-heart-btn" onclick="chargeLove(event)" class="text-7xl sm:text-8xl transition-transform duration-100 active:scale-75 hover:scale-110 select-none cursor-pointer drop-shadow-md focus:outline-none">
+                    ❤️
+                </button>
+            </div>
+
+            <!-- 进度条容器 -->
+            <div class="w-full max-w-md mt-4">
+                <div class="flex justify-between text-xs font-extrabold text-pink-600 mb-1.5 px-1">
+                    <span id="love-status-text">当前爱意电量：准备蓄力中...</span>
+                    <span id="love-percent-text">0%</span>
+                </div>
+                <div class="w-full h-5 bg-pink-100 rounded-full overflow-hidden p-1 shadow-inner border border-pink-200">
+                    <div id="love-progress-bar" class="h-full bg-gradient-to-r from-pink-400 via-rose-500 to-amber-400 rounded-full transition-all duration-200" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 一二布布幸运扭蛋机 -->
+        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-purple-100 flex flex-col items-center text-center">
+            <div class="inline-flex items-center space-x-2 bg-purple-100 text-purple-600 text-xs font-extrabold px-3 py-1 rounded-full mb-2">
+                <span>🎰 GACHAPON SURPRISE</span>
+            </div>
+            <h2 class="cute-font text-2xl sm:text-3xl text-purple-600 mb-1">🎁 一二布布幸运扭蛋机</h2>
+            <p class="text-stone-500 text-xs sm:text-sm mb-6">点击按钮转动摇杆，看看今天能扭出什么生日惊喜！</p>
+
+            <!-- 可爱扭蛋机造型 -->
+            <div id="gacha-machine" class="relative w-56 sm:w-64 flex flex-col items-center transition-transform">
+                <!-- 透明玻璃球仓 -->
+                <div class="w-48 h-48 sm:w-52 sm:h-52 rounded-full bg-gradient-to-b from-sky-100/80 to-pink-100/80 border-4 border-pink-300 shadow-inner relative overflow-hidden flex items-center justify-center">
+                    <span class="text-4xl absolute top-6 left-8 transform -rotate-12">🔴</span>
+                    <span class="text-4xl absolute top-8 right-8 transform rotate-12">🟡</span>
+                    <span class="text-4xl absolute bottom-6 left-6 transform rotate-45">🔵</span>
+                    <span class="text-4xl absolute bottom-5 right-7 transform -rotate-12">🟣</span>
+                    <span class="text-5xl z-10 animate-bounce">🐼🐻</span>
+                </div>
+                <!-- 扭蛋机底座 -->
+                <div class="w-52 sm:w-56 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl p-4 -mt-6 z-10 shadow-lg border-2 border-white flex flex-col items-center">
+                    <button onclick="spinGacha()" id="gacha-btn" class="bg-amber-300 hover:bg-amber-400 text-amber-900 font-extrabold py-2 px-6 rounded-full shadow-md border-2 border-white transition active:scale-95 text-sm">
+                        🎲 扭一下出彩蛋
+                    </button>
+                    <!-- 出蛋口 -->
+                    <div class="w-20 h-10 bg-rose-900/30 rounded-b-xl mt-3 flex items-center justify-center border-t-2 border-rose-300/50">
+                        <span id="gacha-ball-drop" class="text-2xl hidden animate-bounce">🔮</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 扭蛋结果展示框 -->
+            <div id="gacha-result" class="hidden mt-5 bg-purple-50 border-2 border-purple-200 rounded-2xl px-6 py-4 max-w-md w-full animate-fade-in">
+                <p class="text-xs font-bold text-purple-400 mb-1">🎉 恭喜小猪猪扭出了：</p>
+                <p id="gacha-prize-text" class="cute-font text-xl text-purple-700"></p>
+            </div>
+        </section>
+
+        <!-- 5. 小猪猪专属甜蜜刮刮卡 -->
+        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-200 flex flex-col items-center text-center">
+            <div class="inline-flex items-center space-x-2 bg-amber-100 text-amber-700 text-xs font-extrabold px-3 py-1 rounded-full mb-2">
+                <span>🪙 LUCKY SCRATCH CARD</span>
+            </div>
+            <h2 class="cute-font text-2xl sm:text-3xl text-amber-600 mb-1">✨ 小猪猪专属甜蜜刮刮乐</h2>
+            <p class="text-stone-500 text-xs sm:text-sm mb-5">用手指或鼠标在下方卡片涂层上涂抹，刮出你的隐藏大礼！</p>
+
+            <!-- 刮刮卡画布容器 -->
+            <div class="relative w-72 sm:w-80 h-36 rounded-2xl overflow-hidden shadow-lg border-4 border-amber-300 select-none bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center">
+                <!-- 底层隐藏奖品文字 -->
+                <div class="px-4 text-center">
+                    <span class="text-2xl block mb-1">👑</span>
+                    <p id="scratch-prize-text" class="cute-font text-lg sm:text-xl text-rose-600 font-bold">
+                        获得“老公无条件答应一件事”特权！
+                    </p>
+                </div>
+                <!-- 顶层可刮开 Canvas -->
+                <canvas id="scratch-canvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+            </div>
+
+            <button onclick="resetScratchCard()" class="mt-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-1.5 px-5 rounded-full text-xs transition active:scale-95">
+                🔄 换一张新刮刮卡
+            </button>
+        </section>
+
+        <!-- 6. 一二布布的专属情书信封 -->
         <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-rose-100">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="cute-font text-2xl sm:text-3xl text-rose-500">💌 给老婆的生日情书</h2>
@@ -310,6 +369,19 @@
         愿望已收到！
     </div>
 
+    <!-- 拍立得照片放大详情弹窗 -->
+    <div id="polaroid-modal" onclick="closePolaroidModal(event)" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-4 pb-6 rounded-2xl shadow-2xl max-w-sm w-full transform transition-all border-4 border-pink-100 relative" onclick="event.stopPropagation()">
+            <button onclick="document.getElementById('polaroid-modal').classList.add('hidden'); document.getElementById('polaroid-modal').classList.remove('flex');" class="absolute -top-3 -right-3 bg-pink-500 text-white w-8 h-8 rounded-full font-bold shadow-md hover:bg-pink-600">✕</button>
+            <div id="modal-img-box" class="w-full aspect-square rounded-xl overflow-hidden bg-pink-50 flex items-center justify-center mb-4"></div>
+            <div class="text-center px-2">
+                <span id="modal-date" class="inline-block bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-0.5 rounded-full mb-2"></span>
+                <h3 id="modal-title" class="cute-font text-xl text-pink-600 mb-1"></h3>
+                <p id="modal-desc" class="text-stone-600 text-sm leading-relaxed"></p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 1. 生成背景漂浮的爱心与星星装饰
         function initDecorations() {
@@ -351,21 +423,6 @@
             "🐻 布布：无论多少岁，你都是我最宠爱的小猪猪！"
         ];
 
-        // 手动导入本地图片预览
-        function loadUserImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById('main-bear-img');
-                img.src = e.target.result;
-                img.classList.remove('hidden');
-                document.getElementById('upload-hint').classList.add('hidden');
-                showToast("✨ 原图已成功换上！");
-            };
-            reader.readAsDataURL(file);
-        }
-
         function pokeBear(who) {
             const speech = document.getElementById('bear-speech');
             const list = who === 'yier' ? yierQuotes : bubuQuotes;
@@ -376,31 +433,305 @@
             playNote(who === 'yier' ? 523.25 : 392.00, 0.15);
         }
 
-        // 4. 吹灭蜡烛互动
-        let candlesLit = true;
-        function blowCandles() {
-            if (!candlesLit) return;
-            candlesLit = false;
-            document.getElementById('candle-flames').classList.add('hidden');
-            document.getElementById('candle-smoke').classList.remove('hidden');
-            document.getElementById('blow-btn').classList.add('hidden');
-            document.getElementById('relight-btn').classList.remove('hidden');
-            document.getElementById('cake-instruction').innerText = "✨ 蜡烛吹灭啦！愿你所有的美好愿望都能成真！";
+        // 4. 拍立得滚动回忆墙数据与交互
+        // 提示：将你们的合照命名为 photo1.jpg ~ photo5.jpg 放入同一文件夹即可自动显示！
+        let polaroidMemories = [
+            {
+                src: "beach.jpg",
+                emoji: "🐼❤️🐻",
+                bg: "from-pink-100 to-rose-200",
+                date: "心动瞬间 #01",
+                title: "沙滩哟",
+                desc: "那天风很温柔，你的笑容比奶茶还要甜，从那一刻起我就想一直牵着你的手啦！"
+            },
+            {
+                src: "blossum.jpg",
+                emoji: "🍲✨",
+                bg: "from-amber-100 to-orange-200",
+                date: "带你去看樱花 #02",
+                title: "好看的樱花，好看的你",
+                desc: "只要和你在一起，去哪里都可以"
+            },
+            {
+                src: "dive.jpg",
+                emoji: "🎡🌈",
+                bg: "from-sky-100 to-indigo-200",
+                date: "浪漫出游 #03",
+                title: "可怕的跳水",
+                desc: "世界很大，风景很多，但我的镜头里永远只想装下最可爱的你。"
+            },
+            {
+                src: "newyork.jpg",
+                emoji: "🛋️🎬",
+                bg: "from-purple-100 to-pink-200",
+                date: "纽约的我们 #04",
+                title: "青涩的我们",
+                desc: "像一二和布布一样粘在一起每一天都闪闪发光。"
+            },
+            {
+                src: "snowmountain.jpg",
+                emoji: "🎂👑",
+                bg: "from-rose-100 to-amber-200",
+                date: "雪山啊 #05",
+                title: "小猪猪陪你爬雪山",
+                desc: "新的一岁，愿我的宝贝永远被爱包围，健康快乐！"
+            }
+        ];
+
+        function renderPolaroids() {
+            const track = document.getElementById('polaroid-track');
+            if (!track) return;
+            // 复制两份实现丝滑无缝循环滚动
+            const doubled = [...polaroidMemories, ...polaroidMemories];
+            const rotations = ['-rotate-2', 'rotate-2', '-rotate-1', 'rotate-1', '-rotate-2'];
+
+            track.innerHTML = doubled.map((item, idx) => {
+                const rot = rotations[idx % rotations.length];
+                const realIdx = idx % polaroidMemories.length;
+                return `
+                    <div onclick="openPolaroidModal(${realIdx})" 
+                         class="w-48 sm:w-52 flex-shrink-0 bg-white p-3 pb-4 rounded-xl shadow-md hover:shadow-xl border border-stone-100 transition-transform duration-300 hover:scale-105 hover:rotate-0 ${rot}">
+                        <div class="w-full h-44 rounded-lg overflow-hidden bg-gradient-to-br ${item.bg} flex flex-col items-center justify-center relative mb-2.5">
+                            <img src="${item.src}" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" 
+                                 class="w-full h-full object-cover" />
+                            <div class="hidden flex flex-col items-center justify-center p-2 text-center">
+                                <span class="text-4xl mb-1">${item.emoji}</span>
+                                <span class="text-[11px] font-bold text-stone-500/80 bg-white/60 px-2 py-0.5 rounded-full">放入 ${item.src} 显示合照</span>
+                            </div>
+                        </div>
+                        <p class="text-[11px] font-bold text-amber-500 tracking-wide">${item.date}</p>
+                        <h3 class="cute-font text-base text-stone-700 truncate">${item.title}</h3>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openPolaroidModal(index) {
+            const item = polaroidMemories[index];
+            const modal = document.getElementById('polaroid-modal');
+            const imgBox = document.getElementById('modal-img-box');
             
+            imgBox.innerHTML = `
+                <img src="${item.src}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" 
+                     class="w-full h-full object-cover" />
+                <div class="hidden w-full h-full bg-gradient-to-br ${item.bg} flex flex-col items-center justify-center p-4">
+                    <span class="text-6xl mb-2">${item.emoji}</span>
+                    <span class="text-xs font-bold text-stone-500">可放入本地照片 ${item.src} 替换哦~</span>
+                </div>
+            `;
+            document.getElementById('modal-date').innerText = item.date;
+            document.getElementById('modal-title').innerText = item.title;
+            document.getElementById('modal-desc').innerText = item.desc;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            playNote(587.33, 0.12);
+        }
+
+        function closePolaroidModal(e) {
+            if (e.target.id === 'polaroid-modal') {
+                e.target.classList.add('hidden');
+                e.target.classList.remove('flex');
+            }
+        }
+
+        // 批量导入合照预览
+        function loadPolaroidPhotos(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+            files.forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (polaroidMemories[i]) {
+                        polaroidMemories[i].src = e.target.result;
+                    } else {
+                        polaroidMemories.push({
+                            src: e.target.result,
+                            emoji: "💖",
+                            bg: "from-pink-100 to-amber-100",
+                            date: `甜蜜回忆 #0${polaroidMemories.length + 1}`,
+                            title: "和最爱的你在一起",
+                            desc: "每一张合照都是我们相爱的最好证明，生日快乐小猪猪！"
+                        });
+                    }
+                    renderPolaroids();
+                };
+                reader.readAsDataURL(file);
+            });
+            showToast(`📸 成功导入 ${files.length} 张甜蜜合照！`);
+        }
+
+        // 咔嚓定格幸福彩蛋
+        function takeSnapshot() {
+            // 屏幕白色闪光灯效果
+            const flash = document.createElement('div');
+            flash.className = 'fixed inset-0 bg-white z-50 pointer-events-none transition-opacity duration-500';
+            document.body.appendChild(flash);
+            playNote(880, 0.08);
+            setTimeout(() => { flash.style.opacity = '0'; }, 50);
+            setTimeout(() => { flash.remove(); }, 550);
+
             fireConfetti();
-            showToast("🎉 许愿成功！生日快乐，永远幸福！");
+            showToast("📸 咔嚓！已将此刻小猪猪的笑容永久珍藏！");
         }
 
-        function relightCandles() {
-            candlesLit = true;
-            document.getElementById('candle-flames').classList.remove('hidden');
-            document.getElementById('candle-smoke').classList.add('hidden');
-            document.getElementById('blow-btn').classList.remove('hidden');
-            document.getElementById('relight-btn').classList.add('hidden');
-            document.getElementById('cake-instruction').innerText = "点击下方按钮或直接点击蜡烛火焰吹灭蜡烛！";
+        // 5. 给小猪猪疯狂比心充电逻辑
+        let loveCharge = 0;
+        let loveCompleted = false;
+        function chargeLove(e) {
+            // 在点击位置生成飘起的小爱心
+            const floater = document.createElement('div');
+            floater.innerText = ['💖', '💕', '💗', '💓', '🥰'][Math.floor(Math.random() * 5)];
+            floater.className = 'fixed text-2xl pointer-events-none z-50 transition-all duration-700 ease-out';
+            const x = e.clientX || (window.innerWidth / 2);
+            const y = e.clientY || (window.innerHeight / 2);
+            floater.style.left = (x - 12) + 'px';
+            floater.style.top = (y - 12) + 'px';
+            document.body.appendChild(floater);
+            requestAnimationFrame(() => {
+                floater.style.transform = `translate(${(Math.random() - 0.5) * 80}px, -90px) scale(1.4)`;
+                floater.style.opacity = '0';
+            });
+            setTimeout(() => floater.remove(), 700);
+
+            playNote(440 + loveCharge * 4, 0.08);
+
+            if (loveCharge < 100) {
+                loveCharge = Math.min(100, loveCharge + 10);
+                document.getElementById('love-progress-bar').style.width = loveCharge + '%';
+                document.getElementById('love-percent-text').innerText = loveCharge + '%';
+
+                if (loveCharge < 50) {
+                    document.getElementById('love-status-text').innerText = "正在疯狂输送爱意中...";
+                } else if (loveCharge < 100) {
+                    document.getElementById('love-status-text').innerText = "爱意快要溢出来啦！继续点！";
+                } else {
+                    document.getElementById('love-status-text').innerText = "💯 爱意爆棚！小猪猪电量已满格！";
+                    if (!loveCompleted) {
+                        loveCompleted = true;
+                        fireConfetti();
+                        setTimeout(fireConfetti, 400);
+                        showToast("💖 叮咚！小猪猪的爱意能量已充至 100% 满格！");
+                    }
+                }
+            } else {
+                fireConfetti();
+            }
         }
 
-        // 5. 拆开生日情书
+        // 6. 一二布布幸运扭蛋机逻辑
+        const gachaPrizes = [
+            "💋 获得布布牌超响亮亲亲 100 下！",
+            "🧋 一杯加满小料的快乐肥宅奶茶（立刻配送）！",
+            "🛍️ 生日专属免单券：挑一件喜欢的礼物老公买单！",
+            "🛌 周末懒觉特权：早饭端到床边喂小猪猪吃！",
+            "🎡 专属约会券：去游乐园或看一场浪漫电影！",
+            "🍲 深夜食堂券：想吃夜宵老公随时陪吃或下厨！"
+        ];
+        let isSpinning = false;
+        function spinGacha() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const machine = document.getElementById('gacha-machine');
+            const ball = document.getElementById('gacha-ball-drop');
+            const resultBox = document.getElementById('gacha-result');
+            const prizeText = document.getElementById('gacha-prize-text');
+
+            ball.classList.add('hidden');
+            resultBox.classList.add('hidden');
+            machine.classList.add('animate-bounce');
+            playNote(523.25, 0.1);
+
+            setTimeout(() => {
+                machine.classList.remove('animate-bounce');
+                const balls = ['🔴', '🟡', '🔵', '🟣', '🟢'];
+                ball.innerText = balls[Math.floor(Math.random() * balls.length)];
+                ball.classList.remove('hidden');
+
+                const prize = gachaPrizes[Math.floor(Math.random() * gachaPrizes.length)];
+                prizeText.innerText = prize;
+                resultBox.classList.remove('hidden');
+                playNote(659.25, 0.2);
+                fireConfetti();
+                isSpinning = false;
+            }, 800);
+        }
+
+        // 7. 甜蜜刮刮乐 Canvas 逻辑
+        const scratchPrizes = [
+            "👑 获得“老公无条件答应一件事”终极特权！",
+            "💄 获得一支新口红 / 护肤品任选基金！",
+            "🦀 豪华海鲜 / 烤肉大餐一顿，吃到扶墙出！",
+            "💆‍♀️ 享受专属全身放松按摩 30 分钟！",
+            "✈️ 计划一次属于我们俩的甜蜜短途旅行！"
+        ];
+        let scratchIdx = 0;
+
+        function initScratchCard() {
+            const canvas = document.getElementById('scratch-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 320;
+            canvas.height = rect.height || 144;
+
+            // 绘制银粉色刮刮涂层
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, '#F472B6');
+            grad.addColorStop(0.5, '#FBCFE8');
+            grad.addColorStop(1, '#F9A8D4');
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 涂层上的提示字
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✨ 用手指在这里刮开惊喜 ✨', canvas.width / 2, canvas.height / 2);
+
+            let isDrawing = false;
+
+            function getPos(e) {
+                const r = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (clientX - r.left) * (canvas.width / r.width),
+                    y: (clientY - r.top) * (canvas.height / r.height)
+                };
+            }
+
+            function scratch(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const pos = getPos(e);
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            canvas.onmousedown = (e) => { isDrawing = true; scratch(e); };
+            canvas.onmousemove = scratch;
+            window.addEventListener('mouseup', () => { isDrawing = false; });
+
+            canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); };
+            canvas.ontouchmove = scratch;
+            canvas.ontouchend = () => { isDrawing = false; };
+        }
+
+        function resetScratchCard() {
+            scratchIdx = (scratchIdx + 1) % scratchPrizes.length;
+            document.getElementById('scratch-prize-text').innerText = scratchPrizes[scratchIdx];
+            initScratchCard();
+            showToast("✨ 已为你换上一张新的幸运刮刮卡！");
+        }
+
+        // 8. 拆开生日情书
         function openLetter() {
             document.getElementById('letter-closed').classList.add('hidden');
             document.getElementById('letter-opened').classList.remove('hidden');
@@ -469,6 +800,8 @@
         // 页面加载完成后初始化
         window.onload = function() {
             initDecorations();
+            renderPolaroids();
+            initScratchCard();
             setTimeout(fireConfetti, 500);
         };
     </script>
