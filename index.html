@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一二布布祝老婆生日快乐 🎂</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #FFF5F7 0%, #FFF0E5 50%, #FDE8EE 100%);
+            overflow-x: hidden;
+            user-select: none;
+        }
+        .cute-font {
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif;
+        }
+        /* 浮动动画 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        @keyframes floatReverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(-2deg); }
+        }
+        .animate-float {
+            animation: float 3.5s ease-in-out infinite;
+        }
+        .animate-float-reverse {
+            animation: floatReverse 4s ease-in-out infinite;
+        }
+        /* 蜡烛火焰跳动 */
+        @keyframes flicker {
+            0%, 100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+            50% { transform: scale(1.15) rotate(2deg); opacity: 0.9; }
+        }
+        .flame {
+            animation: flicker 0.6s infinite alternate;
+            transform-origin: bottom center;
+        }
+        /* 爱心心跳 */
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.15); }
+        }
+        .animate-heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+        /* 卡片翻转 */
+        .perspective { perspective: 1000px; }
+        .preserve-3d { transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        /* 定制滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #FFF5F7; }
+        ::-webkit-scrollbar-thumb { background: #F9A8D4; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-stone-700 min-h-screen flex flex-col items-center justify-between relative">
+
+    <!-- 背景装饰漂浮物 -->
+    <div id="bg-decorations" class="fixed inset-0 pointer-events-none z-0 overflow-hidden"></div>
+
+    <!-- 顶部音乐控制 & 彩带按钮 -->
+    <header class="w-full max-w-4xl px-4 pt-6 flex justify-between items-center z-10">
+        <div class="flex items-center space-x-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-pink-100">
+            <span class="text-xl animate-heartbeat">❤️</span>
+            <span class="text-sm font-bold text-pink-500 tracking-wide">专属生日派对</span>
+        </div>
+        <div class="flex space-x-2">
+            <button id="music-btn" onclick="toggleMusic()" class="bg-white/90 hover:bg-pink-50 text-pink-500 font-bold py-2 px-4 rounded-full shadow-sm border border-pink-200 transition active:scale-95 flex items-center space-x-1 text-sm">
+                <span id="music-icon">🎵</span>
+                <span id="music-text">播放生日歌</span>
+            </button>
+            <button onclick="fireConfetti()" class="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-bold py-2 px-4 rounded-full shadow-md transition active:scale-95 text-sm">
+                🎉 撒花庆祝
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="w-full max-w-3xl px-4 py-6 flex flex-col items-center z-10 space-y-10">
+
+        <!-- 1. 主标题 & 一二布布双熊萌照 -->
+        <section class="text-center w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-xl border-2 border-pink-100 relative overflow-hidden">
+            <div class="inline-block bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full mb-3 tracking-wider">
+                ✨ HAPPY BIRTHDAY TO MY LITTLE PIGGY ✨
+            </div>
+            <h1 class="cute-font text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 mb-2">
+                亲爱的小猪猪，生日快乐！
+            </h1>
+            <p class="text-stone-500 text-sm sm:text-base mb-6">
+                一二和布布今天特地打扮得漂漂亮亮，来陪世界上最可爱的猪猪过生日啦~
+            </p>
+
+            <!-- 一二 & 布布 互动画面区域 (左半边点击一二，右半边点击布布) -->
+            <div class="relative flex justify-center items-center my-4">
+                <!-- 爱心光环 -->
+                <div class="absolute -top-3 animate-heartbeat text-3xl z-20 pointer-events-none">💖</div>
+
+                <div class="relative w-72 sm:w-80 max-w-full rounded-2xl overflow-hidden animate-float select-none group">
+                    <!-- 支持 GIF 动图与静态图，mix-blend-multiply 让纯白底色与粉色背景自然融合 -->
+                    <img id="main-bear-img" 
+                         src="bear.gif" 
+                         onerror="document.getElementById('upload-hint').classList.remove('hidden')"
+                         alt="一二布布" 
+                         class="w-full h-auto block mix-blend-multiply" />
+
+                    <!-- 如果在在线预览环境找不到本地路径时显示的友好提示按钮 -->
+                    <div id="upload-hint" class="hidden bg-pink-50/95 border-2 border-dashed border-pink-300 rounded-2xl p-6 text-center">
+                        <p class="text-sm font-bold text-pink-600 mb-2">📸 预览环境暂未读取到本地照片</p>
+                        <p class="text-xs text-stone-500 mb-3">点击下方按钮直接选择你相册里的那张图即可显示（如果把网页和图片放同一文件夹打开也会自动显示）</p>
+                        <label class="inline-block bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-2 px-4 rounded-full cursor-pointer shadow transition active:scale-95">
+                            选择我的图片
+                            <input type="file" accept="image/*" class="hidden" onchange="loadUserImage(event)" />
+                        </label>
+                    </div>
+                    
+                    <!-- 隐形左右点击热区 -->
+                    <div id="click-zones" class="absolute inset-0 flex">
+                        <!-- 左边：一二 -->
+                        <div onclick="pokeBear('yier')" 
+                             title="点一点左边的一二" 
+                             class="w-1/2 h-full cursor-pointer active:bg-pink-300/20 transition-colors rounded-l-2xl">
+                        </div>
+                        <!-- 右边：布布 -->
+                        <div onclick="pokeBear('bubu')" 
+                             title="点一点右边的布布" 
+                             class="w-1/2 h-full cursor-pointer active:bg-amber-300/20 transition-colors rounded-r-2xl">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 互动气泡提示 & 手动换图小入口 -->
+            <div class="flex flex-col items-center space-y-2">
+                <div id="bear-speech" class="inline-block bg-pink-50 text-pink-600 font-bold text-sm px-5 py-2 rounded-2xl border border-pink-200 transition-all duration-300">
+                    💬 点击一二或布布，听听它们对你说什么~
+                </div>
+                <label class="text-xs text-stone-400 hover:text-pink-500 cursor-pointer underline transition">
+                    🖼️ 预览没出图？点这里手动导入你的原图
+                    <input type="file" accept="image/*" class="hidden" onchange="loadUserImage(event)" />
+                </label>
+            </div>
+        </section>
+
+        <!-- 2. 互动许愿生日蛋糕 -->
+        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-100 flex flex-col items-center text-center">
+            <h2 class="cute-font text-2xl sm:text-3xl text-amber-600 mb-2">🎂 闭上眼睛，许个愿吧</h2>
+            <p id="cake-instruction" class="text-stone-500 text-sm mb-6">点击下方按钮或直接点击蜡烛火焰吹灭蜡烛！</p>
+
+            <!-- 蛋糕 SVG -->
+            <div class="relative w-64 h-60 flex justify-center items-center cursor-pointer" onclick="blowCandles()">
+                <svg viewBox="0 0 240 220" class="w-full h-full drop-shadow-md">
+                    <!-- 盘子 -->
+                    <ellipse cx="120" cy="195" rx="105" ry="16" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="3"/>
+                    <!-- 蛋糕底层 -->
+                    <rect x="40" y="135" width="160" height="55" rx="12" fill="#FBCFE8" stroke="#5C4033" stroke-width="4"/>
+                    <!-- 底层奶油波浪 -->
+                    <path d="M 40 150 Q 60 165 80 150 T 120 150 T 160 150 T 200 150 L 200 135 L 40 135 Z" fill="#FFF" stroke="#5C4033" stroke-width="3"/>
+                    <!-- 蛋糕顶层 -->
+                    <rect x="65" y="90" width="110" height="45" rx="10" fill="#FDE68A" stroke="#5C4033" stroke-width="4"/>
+                    <!-- 顶层草莓酱波浪 -->
+                    <path d="M 65 103 Q 83 115 101 103 T 138 103 T 175 103 L 175 90 L 65 90 Z" fill="#FB7185" stroke="#5C4033" stroke-width="3"/>
+                    
+                    <!-- 装饰小草莓 -->
+                    <circle cx="85" cy="86" r="7" fill="#E11D48" stroke="#5C4033" stroke-width="2.5"/>
+                    <circle cx="155" cy="86" r="7" fill="#E11D48" stroke="#5C4033" stroke-width="2.5"/>
+
+                    <!-- 蜡烛 1 -->
+                    <rect x="96" y="55" width="10" height="35" rx="3" fill="#93C5FD" stroke="#5C4033" stroke-width="3"/>
+                    <!-- 蜡烛 2 (中间) -->
+                    <rect x="115" y="48" width="10" height="42" rx="3" fill="#F9A8D4" stroke="#5C4033" stroke-width="3"/>
+                    <!-- 蜡烛 3 -->
+                    <rect x="134" y="55" width="10" height="35" rx="3" fill="#A7F3D0" stroke="#5C4033" stroke-width="3"/>
+
+                    <!-- 火焰组 -->
+                    <g id="candle-flames">
+                        <path class="flame" d="M 101 52 C 95 42, 101 32, 101 32 C 101 32, 107 42, 101 52 Z" fill="#F59E0B" stroke="#EA580C" stroke-width="1.5"/>
+                        <path class="flame" d="M 120 45 C 113 33, 120 22, 120 22 C 120 22, 127 33, 120 45 Z" fill="#F59E0B" stroke="#EA580C" stroke-width="1.5"/>
+                        <path class="flame" d="M 139 52 C 133 42, 139 32, 139 32 C 139 32, 145 42, 139 52 Z" fill="#F59E0B" stroke="#EA580C" stroke-width="1.5"/>
+                    </g>
+
+                    <!-- 吹灭后的青烟 (默认隐藏) -->
+                    <g id="candle-smoke" class="hidden opacity-70">
+                        <path d="M 101 50 Q 95 40 103 30" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M 120 43 Q 126 33 118 22" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M 139 50 Q 133 40 141 30" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="flex space-x-3 mt-2">
+                <button id="blow-btn" onclick="blowCandles()" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-extrabold py-2.5 px-6 rounded-full shadow-md transition active:scale-95">
+                    🌬️ 吹灭蜡烛许愿
+                </button>
+                <button id="relight-btn" onclick="relightCandles()" class="hidden bg-pink-100 hover:bg-pink-200 text-pink-600 font-bold py-2.5 px-5 rounded-full transition active:scale-95">
+                    🔥 重新点燃
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. 一二布布的专属情书信封 -->
+        <section class="w-full bg-white/85 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-rose-100">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="cute-font text-2xl sm:text-3xl text-rose-500">💌 给老婆的生日情书</h2>
+                <span class="text-xs bg-rose-100 text-rose-600 font-bold px-3 py-1 rounded-full">点击信封拆开</span>
+            </div>
+
+            <div id="letter-closed" onclick="openLetter()" class="cursor-pointer bg-gradient-to-br from-pink-100 to-rose-100 hover:from-pink-200 hover:to-rose-200 border-2 border-dashed border-rose-300 rounded-2xl p-8 text-center transition-all duration-300 transform hover:scale-[1.01]">
+                <div class="text-5xl mb-3 animate-bounce">✉️</div>
+                <p class="font-bold text-rose-700 text-lg">一封来自老公（和一二布布）的密信</p>
+                <p class="text-rose-500 text-sm mt-1">点击这里拆开信封阅读 ❤️</p>
+            </div>
+
+            <div id="letter-opened" class="hidden bg-amber-50/70 border border-amber-200 rounded-2xl p-6 sm:p-8 text-stone-700 leading-relaxed space-y-4 relative">
+                <p class="font-bold text-lg text-rose-600">亲爱的老婆：</p>
+                <p>
+                    生日快乐呀！就像粘在一起的一二和布布一样，不知不觉我们已经一起走过了这么多快乐又温暖的日子。
+                </p>
+                <p>
+                    感谢你一直以来的温柔、包容和可爱，把我们的小家变得像蜜糖一样甜。希望新的一岁里，你依然可以像一二一样无忧无虑、吃饱饱睡香香，而我会像布布一样，永远做你最坚实的依靠，陪你吃遍所有美食，去想去的地方！
+                </p>
+                <p>
+                    今天你最大，所有的愿望都要实现，所有的烦恼统统退散！
+                </p>
+                <div class="pt-4 flex justify-between items-end border-t border-amber-200/60">
+                    <span class="text-xs text-stone-400">2026年 · 专属定制</span>
+                    <div class="text-right">
+                        <p class="font-bold text-rose-500">永远爱你的老公 🐻🐼</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 一二布布宠妻特权兑换券 (点击翻转) -->
+        <section class="w-full">
+            <div class="text-center mb-5">
+                <h2 class="cute-font text-2xl sm:text-3xl text-pink-600">🎟️ 生日专属宠妻兑换券</h2>
+                <p class="text-stone-500 text-sm">点击卡片翻开查看你的生日特权，随时找老公兑换！</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- 卡片 1 -->
+                <div class="perspective h-44 cursor-pointer" onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')">
+                    <div class="preserve-3d relative w-full h-full">
+                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-pink-400 to-rose-400 rounded-2xl p-5 flex flex-col items-center justify-center text-white shadow-md border-2 border-white">
+                            <span class="text-4xl mb-2">🐼</span>
+                            <span class="font-extrabold text-lg">一二特权券 #1</span>
+                            <span class="text-xs opacity-90 mt-1">点击翻开查看</span>
+                        </div>
+                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-md border-2 border-pink-300">
+                            <span class="text-3xl mb-1">🍲</span>
+                            <h3 class="font-extrabold text-pink-600 text-base">豪华大餐任选券</h3>
+                            <p class="text-xs text-stone-500 mt-1">火锅、日料、烧烤随你挑，老公全额买单不眨眼！</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 2 -->
+                <div class="perspective h-44 cursor-pointer" onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')">
+                    <div class="preserve-3d relative w-full h-full">
+                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl p-5 flex flex-col items-center justify-center text-white shadow-md border-2 border-white">
+                            <span class="text-4xl mb-2">🐻</span>
+                            <span class="font-extrabold text-lg">布布特权券 #2</span>
+                            <span class="text-xs opacity-90 mt-1">点击翻开查看</span>
+                        </div>
+                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-md border-2 border-amber-300">
+                            <span class="text-3xl mb-1">💆‍♀️</span>
+                            <h3 class="font-extrabold text-amber-600 text-base">全套肩颈按摩券</h3>
+                            <p class="text-xs text-stone-500 mt-1">专属布布按摩师上线，包你舒舒服服睡个好觉~</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3 -->
+                <div class="perspective h-44 cursor-pointer" onclick="this.querySelector('.preserve-3d').classList.toggle('rotate-y-180')">
+                    <div class="preserve-3d relative w-full h-full">
+                        <div class="backface-hidden absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl p-5 flex flex-col items-center justify-center text-white shadow-md border-2 border-white">
+                            <span class="text-4xl mb-2">🎁</span>
+                            <span class="font-extrabold text-lg">双熊终极券 #3</span>
+                            <span class="text-xs opacity-90 mt-1">点击翻开查看</span>
+                        </div>
+                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-md border-2 border-purple-300">
+                            <span class="text-3xl mb-1">🛍️</span>
+                            <h3 class="font-extrabold text-purple-600 text-base">购物车清空助力券</h3>
+                            <p class="text-xs text-stone-500 mt-1">挑选一件心仪已久的生日礼物，立刻安排下单！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="w-full text-center py-6 text-xs text-stone-400 z-10">
+        Made with ❤️ for My Beloved Wife · 一二布布永远相伴
+    </footer>
+
+    <!-- 自定义提示消息框 (替代 alert) -->
+    <div id="toast-box" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-stone-800/90 text-white px-6 py-3 rounded-full shadow-lg text-sm font-bold opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        愿望已收到！
+    </div>
+
+    <script>
+        // 1. 生成背景漂浮的爱心与星星装饰
+        function initDecorations() {
+            const container = document.getElementById('bg-decorations');
+            const icons = ['❤️', '✨', '🌸', '🎈', '🎂', '🐾'];
+            for (let i = 0; i < 18; i++) {
+                const el = document.createElement('div');
+                el.innerText = icons[i % icons.length];
+                el.className = 'absolute opacity-30 text-xl sm:text-2xl animate-float';
+                el.style.left = Math.random() * 95 + '%';
+                el.style.top = Math.random() * 95 + '%';
+                el.style.animationDelay = (Math.random() * 3) + 's';
+                el.style.animationDuration = (3 + Math.random() * 3) + 's';
+                container.appendChild(el);
+            }
+        }
+
+        // 2. 彩带特效
+        function fireConfetti() {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FF85A1', '#FFD166', '#72EFDD', '#F472B6']
+            });
+        }
+
+        // 3. 点击一二/布布互动语录
+        const yierQuotes = [
+            "🐼 一二：biu biu biu~ 发射爱心击中可爱的小猪猪！",
+            "🐼 一二：祝漂亮小猪猪永远18岁，天天都有好吃的！",
+            "🐼 一二：贴贴！今天我也是最爱小猪猪的小熊~",
+            "🐼 一二：今天不许减肥，生日蛋糕要吃最大块的！"
+        ];
+        const bubuQuotes = [
+            "🐻 布布：哎呀！被小猪猪和一二的爱心击中啦~",
+            "🐻 布布：小猪猪生日快乐！今天所有家务我全包了！",
+            "🐻 布布：奶茶、火锅、小蛋糕，小猪猪想吃哪个我都买！",
+            "🐻 布布：无论多少岁，你都是我最宠爱的小猪猪！"
+        ];
+
+        // 手动导入本地图片预览
+        function loadUserImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('main-bear-img');
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                document.getElementById('upload-hint').classList.add('hidden');
+                showToast("✨ 原图已成功换上！");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function pokeBear(who) {
+            const speech = document.getElementById('bear-speech');
+            const list = who === 'yier' ? yierQuotes : bubuQuotes;
+            const randomText = list[Math.floor(Math.random() * list.length)];
+            speech.innerText = randomText;
+            speech.classList.add('scale-105', 'bg-pink-100');
+            setTimeout(() => speech.classList.remove('scale-105', 'bg-pink-100'), 200);
+            playNote(who === 'yier' ? 523.25 : 392.00, 0.15);
+        }
+
+        // 4. 吹灭蜡烛互动
+        let candlesLit = true;
+        function blowCandles() {
+            if (!candlesLit) return;
+            candlesLit = false;
+            document.getElementById('candle-flames').classList.add('hidden');
+            document.getElementById('candle-smoke').classList.remove('hidden');
+            document.getElementById('blow-btn').classList.add('hidden');
+            document.getElementById('relight-btn').classList.remove('hidden');
+            document.getElementById('cake-instruction').innerText = "✨ 蜡烛吹灭啦！愿你所有的美好愿望都能成真！";
+            
+            fireConfetti();
+            showToast("🎉 许愿成功！生日快乐，永远幸福！");
+        }
+
+        function relightCandles() {
+            candlesLit = true;
+            document.getElementById('candle-flames').classList.remove('hidden');
+            document.getElementById('candle-smoke').classList.add('hidden');
+            document.getElementById('blow-btn').classList.remove('hidden');
+            document.getElementById('relight-btn').classList.add('hidden');
+            document.getElementById('cake-instruction').innerText = "点击下方按钮或直接点击蜡烛火焰吹灭蜡烛！";
+        }
+
+        // 5. 拆开生日情书
+        function openLetter() {
+            document.getElementById('letter-closed').classList.add('hidden');
+            document.getElementById('letter-opened').classList.remove('hidden');
+            fireConfetti();
+        }
+
+        // 6. 轻提示框
+        function showToast(msg) {
+            const toast = document.getElementById('toast-box');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 3000);
+        }
+
+        // 7. Web Audio API 合成八音盒版《祝你生日快乐》(无需外部音频文件)
+        let audioCtx = null;
+        let isPlaying = false;
+        let songTimeout = null;
+
+        const happyBirthdayNotes = [
+            { f: 261.63, d: 0.3 }, { f: 261.63, d: 0.3 }, { f: 293.66, d: 0.6 }, { f: 261.63, d: 0.6 }, { f: 349.23, d: 0.6 }, { f: 329.63, d: 1.0 },
+            { f: 261.63, d: 0.3 }, { f: 261.63, d: 0.3 }, { f: 293.66, d: 0.6 }, { f: 261.63, d: 0.6 }, { f: 392.00, d: 0.6 }, { f: 349.23, d: 1.0 },
+            { f: 261.63, d: 0.3 }, { f: 261.63, d: 0.3 }, { f: 523.25, d: 0.6 }, { f: 440.00, d: 0.6 }, { f: 349.23, d: 0.6 }, { f: 329.63, d: 0.6 }, { f: 293.66, d: 1.0 },
+            { f: 466.16, d: 0.3 }, { f: 466.16, d: 0.3 }, { f: 440.00, d: 0.6 }, { f: 349.23, d: 0.6 }, { f: 392.00, d: 0.6 }, { f: 349.23, d: 1.2 }
+        ];
+
+        function playNote(freq, duration) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSongLoop(index = 0) {
+            if (!isPlaying) return;
+            if (index >= happyBirthdayNotes.length) index = 0;
+            const note = happyBirthdayNotes[index];
+            playNote(note.f, note.d);
+            songTimeout = setTimeout(() => playSongLoop(index + 1), note.d * 650);
+        }
+
+        function toggleMusic() {
+            const btnText = document.getElementById('music-text');
+            const btnIcon = document.getElementById('music-icon');
+            if (isPlaying) {
+                isPlaying = false;
+                clearTimeout(songTimeout);
+                btnText.innerText = "播放生日歌";
+                btnIcon.innerText = "🎵";
+            } else {
+                isPlaying = true;
+                btnText.innerText = "暂停音乐";
+                btnIcon.innerText = "🎶";
+                playSongLoop(0);
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.onload = function() {
+            initDecorations();
+            setTimeout(fireConfetti, 500);
+        };
+    </script>
+</body>
+</html>
